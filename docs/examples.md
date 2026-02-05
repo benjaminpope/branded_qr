@@ -17,7 +17,7 @@ Example code:
 from branded_qr import make_branded_qr
 img = make_branded_qr(
     url="https://mq.edu.au",
-    logo_path="docs/assets/logos/mq_colour.png"
+    university="mq"
 )
 img.save("mq_qr.png")
 ```
@@ -35,8 +35,23 @@ Example code:
 from branded_qr import make_branded_qr
 img = make_branded_qr(
     url="https://unisq.edu.au",
-    logo_path="docs/assets/logos/unisq_shield_plain.png",
-    finder_dark_color="#3c2d4d"
+    university="unisq"
 )
 img.save("unisq_qr.png")
+```
+
+## University of Sydney
+
+- Website: https://www.sydney.edu.au/
+- Logo shown: (requires `data/sydlogo.png` in your repo)
+
+Example code:
+
+```python
+from branded_qr import make_branded_qr
+img = make_branded_qr(
+    url="https://www.sydney.edu.au/",
+    university="sydney"
+)
+img.save("sydney_qr.png")
 ```

@@ -11,10 +11,26 @@ from PIL import Image, ImageDraw, ImageFilter
 __all__ = ["make_branded_qr"]
 __version__ = "0.1.1"
 
+# Preset logo and finder color configurations for common universities
+UNIVERSITY_PRESETS = {
+    "mq": {
+        "logo_path": "data/mq_colour.png",
+        "finder_dark_color": None,
+    },
+    "unisq": {
+        "logo_path": "data/unisq_shield_plain.png",
+        "finder_dark_color": "#3c2d4d",
+    },
+    "sydney": {
+        "logo_path": "data/sydlogo.png",
+        "finder_dark_color": None,
+    },
+}
+
 
 def make_branded_qr(
     url: str,
-    logo_path: str,
+    logo_path: Optional[str] = None,
     *,
     target_frac: float = 0.18,
     pad_frac: float = 0.28,
@@ -30,6 +46,7 @@ def make_branded_qr(
     module_shape: str = "circle",  # "circle" or "square"
     edge_clearance: float = 1.0,
     save_path: Optional[str] = None,
+    university: Optional[str] = None,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -62,6 +79,21 @@ def make_branded_qr(
 
     Returns: PIL.Image.Image of the composed QR.
     """
+    # Resolve presets based on university, if provided
+    if university:
+        uni_key = university.strip().lower()
+        preset = UNIVERSITY_PRESETS.get(uni_key)
+        if preset is None:
+            raise ValueError(f"Unknown university '{university}'. Choose one of: {', '.join(sorted(UNIVERSITY_PRESETS.keys()))}.")
+        if logo_path is None:
+            logo_path = preset.get("logo_path")
+        if finder_dark_color is None and preset.get("finder_dark_color") is not None:
+            finder_dark_color = preset.get("finder_dark_color")
+        # If a preset doesn't set finder_dark_color, we keep sampling from logo (finder_from_logo=True)
+
+    if logo_path is None:
+        raise ValueError("logo_path must be provided, or specify a supported university preset via 'university'.")
+
     sg_qr = segno.make(url, error=error)
     try:
         mat = sg_qr.matrix
@@ -183,7 +215,8 @@ def make_branded_qr(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a branded QR code with a circular logo inset.")
     parser.add_argument("url", help="URL or text to encode")
-    parser.add_argument("logo_path", help="Path to logo image")
+    parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
+    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney"], help="Preset branding: mq | unisq | sydney")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.18)
     parser.add_argument("--pad-frac", type=float, default=0.28)
@@ -231,6 +264,7 @@ def main() -> None:
         module_shape=args.module_shape,
         edge_clearance=args.edge_clearance,
         save_path=args.save_path,
+        university=args.university,
     )
 
     # If not saving, save to default

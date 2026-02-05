@@ -10,6 +10,16 @@ branded-qr "https://example.com" path/to/logo.png \
   --finder-dark-color "#3c2d4d" -o branded_qr.png
 ```
 
+Preset branding:
+
+```bash
+# MQ preset (uses data/mq_colour.png)
+branded-qr --university mq "https://example.com" -o data/aas_QR.png
+
+# UniSQ preset (uses data/unisq_shield_plain.png and finder color #3c2d4d)
+branded-qr --university unisq "https://example.com" -o data/aas_QR.png
+```
+
 ## Python API
 
 ```python
@@ -20,6 +30,17 @@ img = make_branded_qr(
     finder_dark_color="#3c2d4d"
 )
 img.save("branded_qr.png")
+```
+
+Using presets via `university`:
+
+```python
+from branded_qr import make_branded_qr
+img = make_branded_qr(
+  url="https://example.com",
+  university="mq",  # mq | unisq | sydney
+  save_path="data/aas_QR.png"
+)
 ```
 
 ## Build Docs Locally

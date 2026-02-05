@@ -44,14 +44,14 @@ def _resize_rgba_premultiplied(img: Image.Image, size: Tuple[int, int], resample
     alpha = arr[..., 3:4] / 255.0
     rgb_pm = arr[..., :3] * alpha
     pm = np.concatenate([rgb_pm, alpha * 255.0], axis=-1).astype(np.uint8)
-    pm_img = Image.fromarray(pm, mode="RGBA")
+    pm_img = Image.fromarray(pm)
     pm_resized = pm_img.resize(size, resample)
     arr2 = np.array(pm_resized).astype(np.float32)
     a2 = arr2[..., 3:4]
     # Avoid divide by zero; keep color at 0 where alpha is 0
     rgb_unpm = np.where(a2 > 0, arr2[..., :3] * 255.0 / a2, 0.0)
     out = np.concatenate([rgb_unpm, a2], axis=-1)
-    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), mode="RGBA")
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
 def make_branded_qr(

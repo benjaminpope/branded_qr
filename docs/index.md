@@ -1,6 +1,6 @@
 # Branded QR
 
-Generate QR codes with a circular logo inset, high error correction, and customizable styling.
+Generate QR codes with a circular logo inset, high error correction, and customizable styling. Aimed at Australian university branding for use on slides and posters.
 
 ## Quick Start
 
@@ -38,3 +38,7 @@ finder_dark_color = "#3c2d4d"
 - Circular white inset with optional ring
 - Finder squares, circular data modules
 - Logo centroid alignment for visual centering
+
+## Disclaimer
+
+This is not subscribed to any official branding guidelines. Use at your own risk and feel free to contribute improvements.

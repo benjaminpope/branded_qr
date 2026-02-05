@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/branded_qr.py
+src/branded_qr.egg-info/PKG-INFO
+src/branded_qr.egg-info/SOURCES.txt
+src/branded_qr.egg-info/dependency_links.txt
+src/branded_qr.egg-info/entry_points.txt
+src/branded_qr.egg-info/requires.txt
+src/branded_qr.egg-info/top_level.txt
+tests/test_universities.py

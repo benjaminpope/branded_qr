@@ -1,5 +1,8 @@
 # Branded QR
 
+[![Tests](https://github.com/benjaminpope/branded_qr/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/benjaminpope/branded_qr/actions/workflows/tests.yml)
+[![Docs](https://github.com/benjaminpope/branded_qr/actions/workflows/deploy-docs.yml/badge.svg?branch=main)](https://github.com/benjaminpope/branded_qr/actions/workflows/deploy-docs.yml)
+
 Generate branded QR codes with a circular logo inset, high error correction, and customizable styling.
 
 ## Install

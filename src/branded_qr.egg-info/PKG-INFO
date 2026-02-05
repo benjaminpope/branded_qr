@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: branded-qr
+Version: 0.1.1
+Summary: Generate branded QR codes with a circular logo inset and custom finder/data colors
+Requires-Python: >=3.9
+Requires-Dist: segno>=1.6.6
+Requires-Dist: Pillow>=10.0
+Requires-Dist: numpy>=1.24

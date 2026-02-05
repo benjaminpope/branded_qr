@@ -28,6 +28,27 @@ UNIVERSITY_PRESETS = {
     },
 }
 
+def _resize_rgba_premultiplied(img: Image.Image, size: Tuple[int, int], resample=Image.LANCZOS) -> Image.Image:
+    """Resize an RGBA image using premultiplied alpha to avoid dark halos.
+
+    This prevents color bleeding from fully transparent pixels (often black) when
+    downsampling logos with antialiasing.
+    """
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    arr = np.array(img).astype(np.float32)
+    alpha = arr[..., 3:4] / 255.0
+    rgb_pm = arr[..., :3] * alpha
+    pm = np.concatenate([rgb_pm, alpha * 255.0], axis=-1).astype(np.uint8)
+    pm_img = Image.fromarray(pm, mode="RGBA")
+    pm_resized = pm_img.resize(size, resample)
+    arr2 = np.array(pm_resized).astype(np.float32)
+    a2 = arr2[..., 3:4]
+    # Avoid divide by zero; keep color at 0 where alpha is 0
+    rgb_unpm = np.where(a2 > 0, arr2[..., :3] * 255.0 / a2, 0.0)
+    out = np.concatenate([rgb_unpm, a2], axis=-1)
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), mode="RGBA")
+
 
 def make_branded_qr(
     url: str,
@@ -112,7 +133,7 @@ def make_branded_qr(
     scale = target_w / max(1, w)
     new_w = max(1, target_w)
     new_h = max(1, int(h * scale))
-    new_logo = logo_rgba.resize((new_w, new_h), Image.LANCZOS)
+    new_logo = _resize_rgba_premultiplied(logo_rgba, (new_w, new_h), Image.LANCZOS)
 
     # Determine finder dark color
     if finder_dark_color is not None:

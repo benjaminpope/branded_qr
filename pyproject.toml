@@ -15,3 +15,8 @@ branded-qr = "branded_qr:main"
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Use src-layout for the single-module project
+py-modules = ["branded_qr"]
+package-dir = {"" = "src"}

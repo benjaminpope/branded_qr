@@ -59,12 +59,12 @@ def make_branded_qr(
     logo_path: Optional[str] = None,
     *,
     target_frac: float = 0.234,
-    pad_frac: float = 0.22,
+    pad_frac: float = 0.20,
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
-    qr_scale: int = 14,
-    border_modules: int = 6,
+    qr_scale: int = 16,
+    border_modules: int = 8,
     error: str = "h",
     data_dark: str = "black",
     finder_from_logo: bool = True,
@@ -74,7 +74,7 @@ def make_branded_qr(
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     enforce_occlusion_limit: bool = True,
-    occlusion_threshold: float = 0.16,
+    occlusion_threshold: float = 0.10,
     min_pad_frac: float = 0.24,
     min_target_frac: float = 0.22,
     finder_rounding: float = 0.3,  # fraction of qr_scale for finder corner radius (slightly more rounding)
@@ -82,7 +82,7 @@ def make_branded_qr(
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,
     target_step: float = 0.005,
-    min_img_size: Optional[int] = 1600,
+    min_img_size: Optional[int] = 1920,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -396,12 +396,12 @@ def main() -> None:
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.234)
-    parser.add_argument("--pad-frac", type=float, default=0.22)
+    parser.add_argument("--pad-frac", type=float, default=0.20)
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
-    parser.add_argument("--qr-scale", type=int, default=14)
-    parser.add_argument("--border-modules", type=int, default=6)
+    parser.add_argument("--qr-scale", type=int, default=16)
+    parser.add_argument("--border-modules", type=int, default=8)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
@@ -409,7 +409,7 @@ def main() -> None:
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
     parser.add_argument("--edge-clearance", type=float, default=0.7)
     parser.add_argument("--enforce-occlusion-limit", action="store_true", default=True)
-    parser.add_argument("--occlusion-threshold", type=float, default=0.16)
+    parser.add_argument("--occlusion-threshold", type=float, default=0.10)
     parser.add_argument("--min-pad-frac", type=float, default=0.24)
     parser.add_argument("--min-target-frac", type=float, default=0.22)
     parser.add_argument("--finder-rounding", type=float, default=0.2)
@@ -417,7 +417,7 @@ def main() -> None:
     parser.add_argument("--max-decode-attempts", type=int, default=8)
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)
-    parser.add_argument("--min-img-size", type=int, default=1600)
+    parser.add_argument("--min-img-size", type=int, default=1920)
 
     args = parser.parse_args()
 

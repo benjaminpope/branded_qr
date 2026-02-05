@@ -26,6 +26,10 @@ UNIVERSITY_PRESETS = {
         # Hardcode Sydney brand blue sampled from logo
         "finder_dark_color": "#065192",
     },
+    "uq": {
+        "logo_path": "data/uqlogo.png",
+        "finder_dark_color": None,
+    },
 }
 
 def _resize_rgba_premultiplied(img: Image.Image, size: Tuple[int, int], resample=Image.LANCZOS) -> Image.Image:
@@ -54,7 +58,7 @@ def make_branded_qr(
     url: str,
     logo_path: Optional[str] = None,
     *,
-    target_frac: float = 0.18,
+    target_frac: float = 0.234,
     pad_frac: float = 0.28,
     smooth_sigma: float = 1.2,
     ring_thickness: int = 0,
@@ -238,7 +242,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a branded QR code with a circular logo inset.")
     parser.add_argument("url", help="URL or text to encode")
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
-    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney"], help="Preset branding: mq | unisq | sydney")
+    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.18)
     parser.add_argument("--pad-frac", type=float, default=0.28)

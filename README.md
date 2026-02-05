@@ -22,6 +22,9 @@ branded-qr --university mq "https://example.com" -o data/aas_QR.png
 
 # UniSQ preset (uses data/unisq_shield_plain.png and finder color #3c2d4d)
 branded-qr --university unisq "https://example.com" -o data/aas_QR.png
+
+# UQ preset (uses data/uqlogo.png)
+branded-qr --university uq "https://example.com" -o data/aas_QR.png
 ```
 
 ## Python API

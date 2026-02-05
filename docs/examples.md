@@ -60,3 +60,22 @@ img.save("sydney_qr.png")
 Rendered example:
 
 ![Sydney QR](assets/examples/sydney_qr.png)
+
+## University of Queensland (UQ)
+
+- Website: https://uq.edu.au
+
+Example code:
+
+```python
+from branded_qr import make_branded_qr
+img = make_branded_qr(
+    url="https://uq.edu.au",
+    university="uq"
+)
+img.save("uq_qr.png")
+```
+
+Rendered example:
+
+![UQ QR](assets/examples/uq_qr.png)

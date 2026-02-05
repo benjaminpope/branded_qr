@@ -82,6 +82,7 @@ def make_branded_qr(
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,
     target_step: float = 0.005,
+    min_img_size: Optional[int] = 1024,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -277,6 +278,11 @@ def make_branded_qr(
                 d = ((mx - circle_cx) ** 2 + (my - circle_cy) ** 2) ** 0.5
                 if abs(d - circle_radius) < edge_clearance * module_radius:
                     continue
+                # Skip modules that would be partially occluded by the circle boundary
+                # Precise band: if the module circle intersects the inset circle
+                # i.e., r - mr < d < r + mr (where mr=module_radius)
+                if (circle_radius - module_radius) < d < (circle_radius + module_radius):
+                    continue
                 if module_shape == "circle":
                     draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
                 else:
@@ -316,6 +322,12 @@ def make_branded_qr(
     # Paste circular background centered
     pos = (bg_center[0] - circle_radius, bg_center[1] - circle_radius)
     QRimg.paste(bg, (int(pos[0]), int(pos[1])), bg.split()[-1])
+
+    # Upscale to a minimum final image size for better phone scanning
+    if min_img_size and max(QRimg.size) < min_img_size:
+        scale_factor = max(1.0, min_img_size / max(QRimg.size))
+        new_size = (int(QRimg.size[0] * scale_factor), int(QRimg.size[1] * scale_factor))
+        QRimg = QRimg.resize(new_size, Image.NEAREST)
 
     # Optional decode verification loop using pyzbar (if available)
     if verify_decode:
@@ -365,6 +377,7 @@ def make_branded_qr(
                     min_target_frac=min_target_frac,
                     finder_rounding=finder_rounding,
                     verify_decode=False,
+                    min_img_size=min_img_size,
                 )
                 ok = _can_decode(QRimg)
                 attempts += 1
@@ -404,6 +417,7 @@ def main() -> None:
     parser.add_argument("--max-decode-attempts", type=int, default=8)
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)
+    parser.add_argument("--min-img-size", type=int, default=1024)
 
     args = parser.parse_args()
 
@@ -445,6 +459,7 @@ def main() -> None:
         max_decode_attempts=args.max_decode_attempts,
         pad_step=args.pad_step,
         target_step=args.target_step,
+        min_img_size=args.min_img_size,
         save_path=args.save_path,
         university=args.university,
     )

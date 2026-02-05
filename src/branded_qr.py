@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import argparse
+import math
 from typing import Optional, Tuple
 
 import segno
@@ -326,9 +327,10 @@ def make_branded_qr(
     QRimg.paste(bg, (int(pos[0]), int(pos[1])), bg.split()[-1])
 
     # Upscale to a minimum final image size for better phone scanning
+    # Use an integer scale factor to preserve module crispness exactly.
     if min_img_size and max(QRimg.size) < min_img_size:
-        scale_factor = max(1.0, min_img_size / max(QRimg.size))
-        new_size = (int(QRimg.size[0] * scale_factor), int(QRimg.size[1] * scale_factor))
+        int_factor = max(1, math.ceil(min_img_size / max(QRimg.size)))
+        new_size = (QRimg.size[0] * int_factor, QRimg.size[1] * int_factor)
         QRimg = QRimg.resize(new_size, Image.NEAREST)
 
     # Optional decode verification loop using pyzbar (if available)
@@ -406,7 +408,10 @@ def main() -> None:
     parser.add_argument("--border-modules", type=int, default=8)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
-    parser.add_argument("--finder-from-logo", action="store_true", default=True)
+    # Finder color sampling toggles
+    grp_ffl = parser.add_mutually_exclusive_group()
+    grp_ffl.add_argument("--finder-from-logo", dest="finder_from_logo", action="store_true", default=True)
+    grp_ffl.add_argument("--no-finder-from-logo", dest="finder_from_logo", action="store_false")
     parser.add_argument("--finder-dark-color", type=str, default=None)
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
     parser.add_argument("--edge-clearance", type=float, default=0.5)
@@ -414,8 +419,10 @@ def main() -> None:
     parser.add_argument("--occlusion-threshold", type=float, default=0.15)
     parser.add_argument("--min-pad-frac", type=float, default=0.10)
     parser.add_argument("--min-target-frac", type=float, default=0.10)
-    parser.add_argument("--finder-rounding", type=float, default=0.2)
-    parser.add_argument("--verify-decode", action="store_true", default=True)
+    parser.add_argument("--finder-rounding", type=float, default=0.3)
+    grp_vd = parser.add_mutually_exclusive_group()
+    grp_vd.add_argument("--verify-decode", dest="verify_decode", action="store_true", default=True)
+    grp_vd.add_argument("--no-verify-decode", dest="verify_decode", action="store_false")
     parser.add_argument("--max-decode-attempts", type=int, default=8)
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)

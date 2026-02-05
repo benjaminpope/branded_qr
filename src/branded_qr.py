@@ -77,7 +77,7 @@ def make_branded_qr(
     occlusion_threshold: float = 0.18,
     min_pad_frac: float = 0.24,
     min_target_frac: float = 0.22,
-    finder_rounding: float = 0.2,  # fraction of qr_scale for finder corner radius
+    finder_rounding: float = 0.3,  # fraction of qr_scale for finder corner radius (slightly more rounding)
     verify_decode: bool = True,
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,

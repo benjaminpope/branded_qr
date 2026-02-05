@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 __all__ = ["make_branded_qr"]
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 # Preset logo and finder color configurations for common universities
 UNIVERSITY_PRESETS = {
@@ -72,6 +72,7 @@ def make_branded_qr(
     finder_dark_color: Optional[str] = None,
     module_shape: str = "circle",  # "circle" or "square"
     edge_clearance: float = 0.5,
+    kill_margin: float = 0.35,
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     enforce_occlusion_limit: bool = True,
@@ -79,6 +80,7 @@ def make_branded_qr(
     min_pad_frac: float = 0.10,
     min_target_frac: float = 0.10,
     finder_rounding: float = 0.3,  # fraction of qr_scale for finder corner radius (slightly more rounding)
+    finder_light_color: str = "white",
     verify_decode: bool = True,
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,
@@ -270,7 +272,7 @@ def make_branded_qr(
         return ((x < 7 and y < 7) or (x >= size - 7 and y < 7) or (x < 7 and y >= size - 7))
 
     # Draw non-finder modules only; handle finder as contiguous shapes later
-    kill_margin_px = 0.25 * qr_scale  # widen the skip band to avoid pixel strips
+    kill_margin_px = kill_margin * qr_scale  # widen the skip band to avoid pixel strips
     for y in range(n):
         for x in range(n):
             if mat[y][x]:
@@ -279,6 +281,14 @@ def make_branded_qr(
                     continue
                 px = (x + border_modules) * qr_scale
                 py = (y + border_modules) * qr_scale
+                mx = px + module_radius
+                my = py + module_radius
+                d = ((mx - circle_cx) ** 2 + (my - circle_cy) ** 2) ** 0.5
+                # Skip entire modules that would intersect the circular band to avoid clipped shapes
+                if abs(d - circle_radius) < edge_clearance * module_radius:
+                    continue
+                if (circle_radius - module_radius - kill_margin_px) < d < (circle_radius + module_radius + kill_margin_px):
+                    continue
                 if module_shape == "circle":
                     modules_draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
                 else:
@@ -318,7 +328,7 @@ def make_branded_qr(
         ly0 = (y0 + 1 + border_modules) * qr_scale
         lx1 = (x0 + 6 + border_modules) * qr_scale - 1
         ly1 = (y0 + 6 + border_modules) * qr_scale - 1
-        draw.rectangle([lx0, ly0, lx1, ly1], fill="white")
+        draw.rectangle([lx0, ly0, lx1, ly1], fill=finder_light_color)
 
         # Inner dark 3x3
         dx0 = (x0 + 2 + border_modules) * qr_scale
@@ -424,11 +434,13 @@ def main() -> None:
     parser.add_argument("--finder-dark-color", type=str, default=None)
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
     parser.add_argument("--edge-clearance", type=float, default=0.5)
+    parser.add_argument("--kill-margin", type=float, default=0.35, help="Margin around inset circle (in units of qr_scale) to skip modules and avoid clipping")
     parser.add_argument("--enforce-occlusion-limit", action="store_true", default=True)
     parser.add_argument("--occlusion-threshold", type=float, default=0.15)
     parser.add_argument("--min-pad-frac", type=float, default=0.10)
     parser.add_argument("--min-target-frac", type=float, default=0.10)
     parser.add_argument("--finder-rounding", type=float, default=0.3)
+    parser.add_argument("--finder-light-color", type=str, default="white")
     grp_vd = parser.add_mutually_exclusive_group()
     grp_vd.add_argument("--verify-decode", dest="verify_decode", action="store_true", default=True)
     grp_vd.add_argument("--no-verify-decode", dest="verify_decode", action="store_false")
@@ -471,11 +483,13 @@ def main() -> None:
         finder_dark_color=args.finder_dark_color,
         module_shape=args.module_shape,
         edge_clearance=args.edge_clearance,
+        kill_margin=args.kill_margin,
         enforce_occlusion_limit=args.enforce_occlusion_limit,
         occlusion_threshold=args.occlusion_threshold,
         min_pad_frac=args.min_pad_frac,
         min_target_frac=args.min_target_frac,
         finder_rounding=args.finder_rounding,
+        finder_light_color=args.finder_light_color,
         verify_decode=args.verify_decode,
         max_decode_attempts=args.max_decode_attempts,
         pad_step=args.pad_step,

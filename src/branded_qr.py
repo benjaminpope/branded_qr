@@ -58,8 +58,8 @@ def make_branded_qr(
     url: str,
     logo_path: Optional[str] = None,
     *,
-    target_frac: float = 0.14,
-    pad_frac: float = 0.12,
+    target_frac: float = 0.154,  # 10% larger than 0.14
+    pad_frac: float = 0.14,      # enlarge circle to fit logos better
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
@@ -74,7 +74,7 @@ def make_branded_qr(
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     enforce_occlusion_limit: bool = True,
-    occlusion_threshold: float = 0.10,
+    occlusion_threshold: float = 0.15,
     min_pad_frac: float = 0.10,
     min_target_frac: float = 0.10,
     finder_rounding: float = 0.3,  # fraction of qr_scale for finder corner radius (slightly more rounding)
@@ -255,6 +255,8 @@ def make_branded_qr(
     paste_x = max(0, min(diameter - new_w, base_x + offset_x))
     paste_y = max(0, min(diameter - new_h, base_y + offset_y))
     bg.paste(new_logo, (paste_x, paste_y), new_logo)
+    # Ensure the logo is clipped to the circular mask (no corners leaking)
+    bg.putalpha(circle_mask)
 
     # Render QR modules
     QRimg = Image.new("RGB", (img_w, img_w), "white")
@@ -266,6 +268,7 @@ def make_branded_qr(
         return ((x < 7 and y < 7) or (x >= size - 7 and y < 7) or (x < 7 and y >= size - 7))
 
     # Draw non-finder modules only; handle finder as contiguous shapes later
+    kill_margin_px = 0.25 * qr_scale  # widen the skip band to avoid pixel strips
     for y in range(n):
         for x in range(n):
             if mat[y][x]:
@@ -277,12 +280,10 @@ def make_branded_qr(
                 mx = px + module_radius
                 my = py + module_radius
                 d = ((mx - circle_cx) ** 2 + (my - circle_cy) ** 2) ** 0.5
+                # Aggressive skip around the circle boundary to prevent thin strips
                 if abs(d - circle_radius) < edge_clearance * module_radius:
                     continue
-                # Skip modules that would be partially occluded by the circle boundary
-                # Precise band: if the module circle intersects the inset circle
-                # i.e., r - mr < d < r + mr (where mr=module_radius)
-                if (circle_radius - module_radius) < d < (circle_radius + module_radius):
+                if (circle_radius - module_radius - kill_margin_px) < d < (circle_radius + module_radius + kill_margin_px):
                     continue
                 if module_shape == "circle":
                     draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
@@ -396,8 +397,8 @@ def main() -> None:
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
-    parser.add_argument("--target-frac", type=float, default=0.14)
-    parser.add_argument("--pad-frac", type=float, default=0.12)
+    parser.add_argument("--target-frac", type=float, default=0.154)
+    parser.add_argument("--pad-frac", type=float, default=0.14)
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
@@ -410,7 +411,7 @@ def main() -> None:
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
     parser.add_argument("--edge-clearance", type=float, default=0.5)
     parser.add_argument("--enforce-occlusion-limit", action="store_true", default=True)
-    parser.add_argument("--occlusion-threshold", type=float, default=0.10)
+    parser.add_argument("--occlusion-threshold", type=float, default=0.15)
     parser.add_argument("--min-pad-frac", type=float, default=0.10)
     parser.add_argument("--min-target-frac", type=float, default=0.10)
     parser.add_argument("--finder-rounding", type=float, default=0.2)

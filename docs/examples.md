@@ -7,9 +7,6 @@ Below are example QR codes for a few university logos.
 ## Macquarie University (MQ)
 
 - Website: https://mq.edu.au
-- Logo shown:
-
-![MQ Logo](assets/logos/mq_colour.png)
 
 Example code:
 
@@ -29,9 +26,6 @@ Rendered example:
 ## University of Southern Queensland (UniSQ)
 
 - Website: https://unisq.edu.au
-- Logo shown:
-
-![UniSQ Logo](assets/logos/unisq_shield_plain.png)
 
 Example code:
 
@@ -51,7 +45,6 @@ Rendered example:
 ## University of Sydney
 
 - Website: https://www.sydney.edu.au/
-- Logo shown: (requires `data/sydlogo.png` in your repo)
 
 Example code:
 

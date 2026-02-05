@@ -22,6 +22,10 @@ img = make_branded_qr(
 img.save("mq_qr.png")
 ```
 
+Rendered example:
+
+![MQ QR](assets/examples/mq_qr.png)
+
 ## University of Southern Queensland (UniSQ)
 
 - Website: https://unisq.edu.au
@@ -40,6 +44,10 @@ img = make_branded_qr(
 img.save("unisq_qr.png")
 ```
 
+Rendered example:
+
+![UniSQ QR](assets/examples/unisq_qr.png)
+
 ## University of Sydney
 
 - Website: https://www.sydney.edu.au/
@@ -55,3 +63,7 @@ img = make_branded_qr(
 )
 img.save("sydney_qr.png")
 ```
+
+Rendered example:
+
+![Sydney QR](assets/examples/sydney_qr.png)

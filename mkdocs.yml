@@ -15,3 +15,8 @@ markdown_extensions:
   - toc:
       permalink: true
   - tables
+  - codehilite:
+      guess_lang: false
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences

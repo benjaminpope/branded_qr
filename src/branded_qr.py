@@ -78,7 +78,7 @@ def make_branded_qr(
     min_pad_frac: float = 0.24,
     min_target_frac: float = 0.22,
     finder_rounding: float = 0.2,  # fraction of qr_scale for finder corner radius
-    verify_decode: bool = False,
+    verify_decode: bool = True,
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,
     target_step: float = 0.005,
@@ -263,30 +263,55 @@ def make_branded_qr(
     def in_finder(x: int, y: int, size: int) -> bool:
         return ((x < 7 and y < 7) or (x >= size - 7 and y < 7) or (x < 7 and y >= size - 7))
 
+    # Draw non-finder modules only; handle finder as contiguous shapes later
     for y in range(n):
         for x in range(n):
             if mat[y][x]:
+                is_finder = in_finder(x, y, n)
+                if is_finder:
+                    continue
                 px = (x + border_modules) * qr_scale
                 py = (y + border_modules) * qr_scale
                 mx = px + module_radius
                 my = py + module_radius
                 d = ((mx - circle_cx) ** 2 + (my - circle_cy) ** 2) ** 0.5
-                is_finder = in_finder(x, y, n)
-                color = finder_dark_hex if is_finder else data_dark
-                if not is_finder and abs(d - circle_radius) < edge_clearance * module_radius:
+                if abs(d - circle_radius) < edge_clearance * module_radius:
                     continue
-                if is_finder:
-                    # Slightly rounded finder modules
-                    try:
-                        radius = max(0, int(qr_scale * finder_rounding))
-                        draw.rounded_rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], radius=radius, fill=color)
-                    except Exception:
-                        draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
+                if module_shape == "circle":
+                    draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
                 else:
-                    if module_shape == "circle":
-                        draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
-                    else:
-                        draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
+                    draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+
+    # Draw contiguous finder squares with slightly rounded outer corners
+    radius = max(0, int(qr_scale * finder_rounding))
+    def draw_finder(x0: int, y0: int):
+        # Outer dark 7x7
+        px0 = (x0 + border_modules) * qr_scale
+        py0 = (y0 + border_modules) * qr_scale
+        px1 = (x0 + 7 + border_modules) * qr_scale - 1
+        py1 = (y0 + 7 + border_modules) * qr_scale - 1
+        try:
+            draw.rounded_rectangle([px0, py0, px1, py1], radius=radius, fill=finder_dark_hex)
+        except Exception:
+            draw.rectangle([px0, py0, px1, py1], fill=finder_dark_hex)
+
+        # Inner light 5x5
+        lx0 = (x0 + 1 + border_modules) * qr_scale
+        ly0 = (y0 + 1 + border_modules) * qr_scale
+        lx1 = (x0 + 6 + border_modules) * qr_scale - 1
+        ly1 = (y0 + 6 + border_modules) * qr_scale - 1
+        draw.rectangle([lx0, ly0, lx1, ly1], fill="white")
+
+        # Inner dark 3x3
+        dx0 = (x0 + 2 + border_modules) * qr_scale
+        dy0 = (y0 + 2 + border_modules) * qr_scale
+        dx1 = (x0 + 5 + border_modules) * qr_scale - 1
+        dy1 = (y0 + 5 + border_modules) * qr_scale - 1
+        draw.rectangle([dx0, dy0, dx1, dy1], fill=finder_dark_hex)
+
+    draw_finder(0, 0)
+    draw_finder(n - 7, 0)
+    draw_finder(0, n - 7)
 
     # Paste circular background centered
     pos = (bg_center[0] - circle_radius, bg_center[1] - circle_radius)
@@ -375,7 +400,7 @@ def main() -> None:
     parser.add_argument("--min-pad-frac", type=float, default=0.24)
     parser.add_argument("--min-target-frac", type=float, default=0.22)
     parser.add_argument("--finder-rounding", type=float, default=0.2)
-    parser.add_argument("--verify-decode", action="store_true", default=False)
+    parser.add_argument("--verify-decode", action="store_true", default=True)
     parser.add_argument("--max-decode-attempts", type=int, default=8)
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)

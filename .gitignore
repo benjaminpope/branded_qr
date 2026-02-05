@@ -1,0 +1,14 @@
+# Python / uv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+.uv/
+# VS Code
+.vscode/
+# macOS
+.DS_Store
+# MkDocs build
+site/

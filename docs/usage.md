@@ -49,8 +49,8 @@ img = make_branded_qr(
 ## Build Docs Locally
 
 ```bash
-pip install mkdocs mkdocs-material
-mkdocs serve
+uv pip install mkdocs mkdocs-material
+uv run mkdocs serve
 ```
 
 Open http://127.0.0.1:8000 in your browser.

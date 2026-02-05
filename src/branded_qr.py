@@ -77,6 +77,11 @@ def make_branded_qr(
     occlusion_threshold: float = 0.18,
     min_pad_frac: float = 0.24,
     min_target_frac: float = 0.22,
+    finder_rounding: float = 0.2,  # fraction of qr_scale for finder corner radius
+    verify_decode: bool = False,
+    max_decode_attempts: int = 8,
+    pad_step: float = 0.01,
+    target_step: float = 0.005,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -271,7 +276,12 @@ def make_branded_qr(
                 if not is_finder and abs(d - circle_radius) < edge_clearance * module_radius:
                     continue
                 if is_finder:
-                    draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
+                    # Slightly rounded finder modules
+                    try:
+                        radius = max(0, int(qr_scale * finder_rounding))
+                        draw.rounded_rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], radius=radius, fill=color)
+                    except Exception:
+                        draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
                 else:
                     if module_shape == "circle":
                         draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=color)
@@ -281,6 +291,60 @@ def make_branded_qr(
     # Paste circular background centered
     pos = (bg_center[0] - circle_radius, bg_center[1] - circle_radius)
     QRimg.paste(bg, (int(pos[0]), int(pos[1])), bg.split()[-1])
+
+    # Optional decode verification loop using pyzbar (if available)
+    if verify_decode:
+        try:
+            from pyzbar.pyzbar import decode as _decode
+            def _can_decode(img: Image.Image) -> bool:
+                try:
+                    res = _decode(img)
+                    return any(symbol.data.decode("utf-8", "ignore") for symbol in res)
+                except Exception:
+                    return False
+
+            attempts = 0
+            ok = _can_decode(QRimg)
+            current_pad = pad_frac
+            current_target = target_frac
+            while not ok and attempts < max_decode_attempts:
+                # Prefer reducing padding first, then target size
+                if current_pad > min_pad_frac:
+                    current_pad = max(min_pad_frac, current_pad - pad_step)
+                elif current_target > min_target_frac:
+                    current_target = max(min_target_frac, current_target - target_step)
+                else:
+                    break
+                # Re-render with adjusted pad/target
+                QRimg = make_branded_qr(
+                    url=url,
+                    logo_path=logo_path,
+                    target_frac=current_target,
+                    pad_frac=current_pad,
+                    smooth_sigma=smooth_sigma,
+                    ring_thickness=ring_thickness,
+                    ring_color=ring_color,
+                    qr_scale=qr_scale,
+                    border_modules=border_modules,
+                    error=error,
+                    data_dark=data_dark,
+                    finder_from_logo=finder_from_logo,
+                    finder_dark_color=finder_dark_color,
+                    module_shape=module_shape,
+                    edge_clearance=edge_clearance,
+                    save_path=None,
+                    university=university,
+                    enforce_occlusion_limit=enforce_occlusion_limit,
+                    occlusion_threshold=occlusion_threshold,
+                    min_pad_frac=min_pad_frac,
+                    min_target_frac=min_target_frac,
+                    finder_rounding=finder_rounding,
+                    verify_decode=False,
+                )
+                ok = _can_decode(QRimg)
+                attempts += 1
+        except Exception:
+            pass
 
     if save_path:
         QRimg.save(save_path)
@@ -310,6 +374,11 @@ def main() -> None:
     parser.add_argument("--occlusion-threshold", type=float, default=0.18)
     parser.add_argument("--min-pad-frac", type=float, default=0.24)
     parser.add_argument("--min-target-frac", type=float, default=0.22)
+    parser.add_argument("--finder-rounding", type=float, default=0.2)
+    parser.add_argument("--verify-decode", action="store_true", default=False)
+    parser.add_argument("--max-decode-attempts", type=int, default=8)
+    parser.add_argument("--pad-step", type=float, default=0.01)
+    parser.add_argument("--target-step", type=float, default=0.005)
 
     args = parser.parse_args()
 
@@ -346,6 +415,11 @@ def main() -> None:
         occlusion_threshold=args.occlusion_threshold,
         min_pad_frac=args.min_pad_frac,
         min_target_frac=args.min_target_frac,
+        finder_rounding=args.finder_rounding,
+        verify_decode=args.verify_decode,
+        max_decode_attempts=args.max_decode_attempts,
+        pad_step=args.pad_step,
+        target_step=args.target_step,
         save_path=args.save_path,
         university=args.university,
     )

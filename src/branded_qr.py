@@ -59,22 +59,22 @@ def make_branded_qr(
     logo_path: Optional[str] = None,
     *,
     target_frac: float = 0.234,
-    pad_frac: float = 0.22,
+    pad_frac: float = 0.20,
     smooth_sigma: float = 1.2,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
     qr_scale: int = 10,
-    border_modules: int = 6,
+    border_modules: int = 4,
     error: str = "h",
     data_dark: str = "black",
     finder_from_logo: bool = True,
     finder_dark_color: Optional[str] = None,
-    module_shape: str = "circle",  # "circle" or "square"
-    edge_clearance: float = 1.0,
+    module_shape: str = "square",  # "circle" or "square"
+    edge_clearance: float = 0.6,
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     auto_adjust_mask: bool = True,
-    max_occlusion: float = 0.22,
+    max_occlusion: float = 0.20,
     min_pad_frac: float = 0.16,
     min_target_frac: float = 0.20,
 ) -> Image.Image:
@@ -297,20 +297,20 @@ def main() -> None:
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.234)
-    parser.add_argument("--pad-frac", type=float, default=0.22)
+    parser.add_argument("--pad-frac", type=float, default=0.20)
     parser.add_argument("--smooth-sigma", type=float, default=1.2)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
     parser.add_argument("--qr-scale", type=int, default=10)
-    parser.add_argument("--border-modules", type=int, default=6)
+    parser.add_argument("--border-modules", type=int, default=4)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
     parser.add_argument("--finder-dark-color", type=str, default=None)
-    parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
-    parser.add_argument("--edge-clearance", type=float, default=1.0)
+    parser.add_argument("--module-shape", type=str, default="square", choices=["circle", "square"]) 
+    parser.add_argument("--edge-clearance", type=float, default=0.6)
     parser.add_argument("--auto-adjust-mask", action="store_true", default=True)
-    parser.add_argument("--max-occlusion", type=float, default=0.22)
+    parser.add_argument("--max-occlusion", type=float, default=0.20)
     parser.add_argument("--min-pad-frac", type=float, default=0.16)
     parser.add_argument("--min-target-frac", type=float, default=0.20)
 

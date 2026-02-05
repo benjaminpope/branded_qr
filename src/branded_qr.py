@@ -16,6 +16,13 @@ UNIVERSITY_PRESETS = {
     "mq": {
         "logo_path": "data/mq_colour.png",
         "finder_dark_color": None,
+        # Preset-specific robustness overrides
+        "pad_frac": 0.22,
+        "border_modules": 8,
+        "min_img_size": 1600,
+        "occlusion_threshold": 0.12,
+        "qr_scale": 14,
+        "min_target_frac": 0.20,
     },
     "unisq": {
         "logo_path": "data/unisq_shield_plain.png",
@@ -29,6 +36,13 @@ UNIVERSITY_PRESETS = {
     "uq": {
         "logo_path": "data/uqlogo.png",
         "finder_dark_color": None,
+        # Preset-specific robustness overrides
+        "pad_frac": 0.22,
+        "border_modules": 8,
+        "min_img_size": 1600,
+        "occlusion_threshold": 0.12,
+        "qr_scale": 14,
+        "min_target_frac": 0.20,
     },
 }
 
@@ -125,6 +139,19 @@ def make_branded_qr(
             logo_path = preset.get("logo_path")
         if finder_dark_color is None and preset.get("finder_dark_color") is not None:
             finder_dark_color = preset.get("finder_dark_color")
+        # Apply preset-specific robustness overrides
+        if preset.get("pad_frac") is not None:
+            pad_frac = preset["pad_frac"]
+        if preset.get("border_modules") is not None:
+            border_modules = preset["border_modules"]
+        if preset.get("min_img_size") is not None:
+            min_img_size = preset["min_img_size"]
+        if preset.get("occlusion_threshold") is not None:
+            occlusion_threshold = preset["occlusion_threshold"]
+        if preset.get("qr_scale") is not None:
+            qr_scale = preset["qr_scale"]
+        if preset.get("min_target_frac") is not None:
+            min_target_frac = preset["min_target_frac"]
         # If a preset doesn't set finder_dark_color, we keep sampling from logo (finder_from_logo=True)
 
     if logo_path is None:

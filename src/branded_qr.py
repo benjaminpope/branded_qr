@@ -58,8 +58,8 @@ def make_branded_qr(
     url: str,
     logo_path: Optional[str] = None,
     *,
-    target_frac: float = 0.234,
-    pad_frac: float = 0.20,
+    target_frac: float = 0.21,
+    pad_frac: float = 0.18,
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
@@ -70,7 +70,7 @@ def make_branded_qr(
     finder_from_logo: bool = True,
     finder_dark_color: Optional[str] = None,
     module_shape: str = "circle",  # "circle" or "square"
-    edge_clearance: float = 0.7,
+    edge_clearance: float = 0.5,
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     enforce_occlusion_limit: bool = True,
@@ -396,8 +396,8 @@ def main() -> None:
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
-    parser.add_argument("--target-frac", type=float, default=0.234)
-    parser.add_argument("--pad-frac", type=float, default=0.20)
+    parser.add_argument("--target-frac", type=float, default=0.21)
+    parser.add_argument("--pad-frac", type=float, default=0.18)
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
@@ -408,7 +408,7 @@ def main() -> None:
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
     parser.add_argument("--finder-dark-color", type=str, default=None)
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
-    parser.add_argument("--edge-clearance", type=float, default=0.7)
+    parser.add_argument("--edge-clearance", type=float, default=0.5)
     parser.add_argument("--enforce-occlusion-limit", action="store_true", default=True)
     parser.add_argument("--occlusion-threshold", type=float, default=0.10)
     parser.add_argument("--min-pad-frac", type=float, default=0.24)

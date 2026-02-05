@@ -58,8 +58,8 @@ def make_branded_qr(
     url: str,
     logo_path: Optional[str] = None,
     *,
-    target_frac: float = 0.21,
-    pad_frac: float = 0.18,
+    target_frac: float = 0.18,
+    pad_frac: float = 0.16,
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
@@ -396,8 +396,8 @@ def main() -> None:
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
-    parser.add_argument("--target-frac", type=float, default=0.21)
-    parser.add_argument("--pad-frac", type=float, default=0.18)
+    parser.add_argument("--target-frac", type=float, default=0.18)
+    parser.add_argument("--pad-frac", type=float, default=0.16)
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")

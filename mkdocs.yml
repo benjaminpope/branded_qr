@@ -1,0 +1,17 @@
+site_name: Branded QR
+site_description: Generate branded QR codes with circular logo insets
+repo_url: https://github.com/benpope/branded-qr
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Examples: examples.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables

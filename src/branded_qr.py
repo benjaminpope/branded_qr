@@ -59,12 +59,12 @@ def make_branded_qr(
     logo_path: Optional[str] = None,
     *,
     target_frac: float = 0.234,
-    pad_frac: float = 0.26,
+    pad_frac: float = 0.24,
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
     qr_scale: int = 12,
-    border_modules: int = 4,
+    border_modules: int = 5,
     error: str = "h",
     data_dark: str = "black",
     finder_from_logo: bool = True,
@@ -82,7 +82,7 @@ def make_branded_qr(
     max_decode_attempts: int = 8,
     pad_step: float = 0.01,
     target_step: float = 0.005,
-    min_img_size: Optional[int] = 1024,
+    min_img_size: Optional[int] = 1280,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -396,12 +396,12 @@ def main() -> None:
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.234)
-    parser.add_argument("--pad-frac", type=float, default=0.26)
+    parser.add_argument("--pad-frac", type=float, default=0.24)
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
     parser.add_argument("--qr-scale", type=int, default=12)
-    parser.add_argument("--border-modules", type=int, default=4)
+    parser.add_argument("--border-modules", type=int, default=5)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
@@ -417,7 +417,7 @@ def main() -> None:
     parser.add_argument("--max-decode-attempts", type=int, default=8)
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)
-    parser.add_argument("--min-img-size", type=int, default=1024)
+    parser.add_argument("--min-img-size", type=int, default=1280)
 
     args = parser.parse_args()
 

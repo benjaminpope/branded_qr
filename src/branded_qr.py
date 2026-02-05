@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 
 import segno
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 __all__ = ["make_branded_qr"]
 __version__ = "0.1.1"
@@ -259,9 +259,10 @@ def make_branded_qr(
     # Ensure the logo is clipped to the circular mask (no corners leaking)
     bg.putalpha(circle_mask)
 
-    # Render QR modules
-    QRimg = Image.new("RGB", (img_w, img_w), "white")
-    draw = ImageDraw.Draw(QRimg)
+    # Render QR modules (data layer) on a separate RGBA layer for precise masking
+    QRimg = Image.new("RGBA", (img_w, img_w), (255, 255, 255, 255))
+    modules_layer = Image.new("RGBA", (img_w, img_w), (0, 0, 0, 0))
+    modules_draw = ImageDraw.Draw(modules_layer)
     module_radius = qr_scale / 2.0
     circle_cx, circle_cy = bg_center
 
@@ -278,20 +279,28 @@ def make_branded_qr(
                     continue
                 px = (x + border_modules) * qr_scale
                 py = (y + border_modules) * qr_scale
-                mx = px + module_radius
-                my = py + module_radius
-                d = ((mx - circle_cx) ** 2 + (my - circle_cy) ** 2) ** 0.5
-                # Aggressive skip around the circle boundary to prevent thin strips
-                if abs(d - circle_radius) < edge_clearance * module_radius:
-                    continue
-                if (circle_radius - module_radius - kill_margin_px) < d < (circle_radius + module_radius + kill_margin_px):
-                    continue
                 if module_shape == "circle":
-                    draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+                    modules_draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
                 else:
-                    draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+                    modules_draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+
+    # Strict band mask: remove any module pixels within circle radius + margin
+    band_mask = Image.new("L", (img_w, img_w), 255)
+    band_draw = ImageDraw.Draw(band_mask)
+    bx0 = circle_cx - (circle_radius + kill_margin_px)
+    by0 = circle_cy - (circle_radius + kill_margin_px)
+    bx1 = circle_cx + (circle_radius + kill_margin_px)
+    by1 = circle_cy + (circle_radius + kill_margin_px)
+    band_draw.ellipse([bx0, by0, bx1, by1], fill=0)
+    modules_alpha = modules_layer.split()[-1]
+    effective_alpha = ImageChops.multiply(modules_alpha, band_mask)
+    modules_layer.putalpha(effective_alpha)
+
+    # Composite masked modules on the base
+    QRimg = Image.alpha_composite(QRimg, modules_layer)
 
     # Draw contiguous finder squares with slightly rounded outer corners
+    draw = ImageDraw.Draw(QRimg)
     radius = max(0, int(qr_scale * finder_rounding))
     def draw_finder(x0: int, y0: int):
         # Outer dark 7x7
@@ -389,8 +398,8 @@ def make_branded_qr(
             pass
 
     if save_path:
-        QRimg.save(save_path)
-    return QRimg
+        QRimg.convert("RGB").save(save_path)
+    return QRimg.convert("RGB")
 
 
 def main() -> None:

@@ -23,7 +23,8 @@ UNIVERSITY_PRESETS = {
     },
     "sydney": {
         "logo_path": "data/sydlogo.png",
-        "finder_dark_color": None,
+        # Hardcode Sydney brand blue sampled from logo
+        "finder_dark_color": "#065192",
     },
 }
 

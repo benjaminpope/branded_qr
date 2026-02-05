@@ -59,7 +59,7 @@ def make_branded_qr(
     logo_path: Optional[str] = None,
     *,
     target_frac: float = 0.234,
-    pad_frac: float = 0.20,
+    pad_frac: float = 0.28,
     smooth_sigma: float = 1.2,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
@@ -69,14 +69,10 @@ def make_branded_qr(
     data_dark: str = "black",
     finder_from_logo: bool = True,
     finder_dark_color: Optional[str] = None,
-    module_shape: str = "square",  # "circle" or "square"
-    edge_clearance: float = 0.6,
+    module_shape: str = "circle",  # "circle" or "square"
+    edge_clearance: float = 1.0,
     save_path: Optional[str] = None,
     university: Optional[str] = None,
-    auto_adjust_mask: bool = True,
-    max_occlusion: float = 0.20,
-    min_pad_frac: float = 0.16,
-    min_target_frac: float = 0.20,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -143,53 +139,6 @@ def make_branded_qr(
     new_h = max(1, int(h * scale))
     new_logo = _resize_rgba_premultiplied(logo_rgba, (new_w, new_h), Image.LANCZOS)
 
-    # Optionally auto-adjust mask (pad/target) to keep occlusion under threshold
-    if auto_adjust_mask:
-        def estimate_occlusion_ratio(current_new_w: int, current_new_h: int, current_pad_frac: float) -> float:
-            pad_px = max(8, int(current_new_w * current_pad_frac))
-            diameter = max(current_new_w, current_new_h) + 2 * pad_px
-            circle_radius_local = diameter // 2
-            circle_cx_local, circle_cy_local = img_w // 2, img_w // 2
-            module_radius_local = qr_scale / 2.0
-            total_dark = 0
-            occluded = 0
-            for yy in range(n):
-                for xx in range(n):
-                    if mat[yy][xx]:
-                        total_dark += 1
-                        px = (xx + border_modules) * qr_scale
-                        py = (yy + border_modules) * qr_scale
-                        mx = px + module_radius_local
-                        my = py + module_radius_local
-                        d = ((mx - circle_cx_local) ** 2 + (my - circle_cy_local) ** 2) ** 0.5
-                        if d <= circle_radius_local - 0.5 * module_radius_local:
-                            occluded += 1
-            return (occluded / max(1, total_dark))
-
-        # First try reducing padding
-        current_pad = pad_frac
-        ratio = estimate_occlusion_ratio(new_w, new_h, current_pad)
-        attempts = 0
-        while ratio > max_occlusion and current_pad > min_pad_frac and attempts < 20:
-            current_pad = max(min_pad_frac, current_pad * 0.9)
-            ratio = estimate_occlusion_ratio(new_w, new_h, current_pad)
-            attempts += 1
-        pad_frac = current_pad
-
-        # If still too high, reduce target_frac moderately and recompute logo size
-        if ratio > max_occlusion and target_frac > min_target_frac:
-            attempts2 = 0
-            current_target = target_frac
-            while ratio > max_occlusion and current_target > min_target_frac and attempts2 < 20:
-                current_target = max(min_target_frac, current_target * 0.95)
-                target_w2 = int(img_w * current_target)
-                scale2 = target_w2 / max(1, w)
-                new_w = max(1, target_w2)
-                new_h = max(1, int(h * scale2))
-                new_logo = _resize_rgba_premultiplied(logo_rgba, (new_w, new_h), Image.LANCZOS)
-                ratio = estimate_occlusion_ratio(new_w, new_h, pad_frac)
-                attempts2 += 1
-            target_frac = current_target
 
     # Determine finder dark color
     if finder_dark_color is not None:
@@ -297,7 +246,7 @@ def main() -> None:
     parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.234)
-    parser.add_argument("--pad-frac", type=float, default=0.20)
+    parser.add_argument("--pad-frac", type=float, default=0.28)
     parser.add_argument("--smooth-sigma", type=float, default=1.2)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
@@ -307,12 +256,8 @@ def main() -> None:
     parser.add_argument("--data-dark", type=str, default="black")
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
     parser.add_argument("--finder-dark-color", type=str, default=None)
-    parser.add_argument("--module-shape", type=str, default="square", choices=["circle", "square"]) 
-    parser.add_argument("--edge-clearance", type=float, default=0.6)
-    parser.add_argument("--auto-adjust-mask", action="store_true", default=True)
-    parser.add_argument("--max-occlusion", type=float, default=0.20)
-    parser.add_argument("--min-pad-frac", type=float, default=0.16)
-    parser.add_argument("--min-target-frac", type=float, default=0.20)
+    parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
+    parser.add_argument("--edge-clearance", type=float, default=1.0)
 
     args = parser.parse_args()
 
@@ -345,10 +290,6 @@ def main() -> None:
         finder_dark_color=args.finder_dark_color,
         module_shape=args.module_shape,
         edge_clearance=args.edge_clearance,
-        auto_adjust_mask=args.auto_adjust_mask,
-        max_occlusion=args.max_occlusion,
-        min_pad_frac=args.min_pad_frac,
-        min_target_frac=args.min_target_frac,
         save_path=args.save_path,
         university=args.university,
     )

@@ -83,6 +83,7 @@ def make_branded_qr(
     pad_step: float = 0.01,
     target_step: float = 0.005,
     min_img_size: Optional[int] = 1920,
+    boost_error: bool = True,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -130,7 +131,7 @@ def make_branded_qr(
     if logo_path is None:
         raise ValueError("logo_path must be provided, or specify a supported university preset via 'university'.")
 
-    sg_qr = segno.make(url, error=error)
+    sg_qr = segno.make(url, error=error, boost_error=boost_error)
     try:
         mat = sg_qr.matrix
     except AttributeError:
@@ -418,6 +419,9 @@ def main() -> None:
     parser.add_argument("--pad-step", type=float, default=0.01)
     parser.add_argument("--target-step", type=float, default=0.005)
     parser.add_argument("--min-img-size", type=int, default=1920)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--boost-error", dest="boost_error", action="store_true", default=True)
+    group.add_argument("--no-boost-error", dest="boost_error", action="store_false")
 
     args = parser.parse_args()
 
@@ -460,6 +464,7 @@ def main() -> None:
         pad_step=args.pad_step,
         target_step=args.target_step,
         min_img_size=args.min_img_size,
+        boost_error=args.boost_error,
         save_path=args.save_path,
         university=args.university,
     )

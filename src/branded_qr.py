@@ -63,18 +63,18 @@ def make_branded_qr(
     smooth_sigma: float = 0.0,
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
-    qr_scale: int = 10,
+    qr_scale: int = 12,
     border_modules: int = 4,
     error: str = "h",
     data_dark: str = "black",
     finder_from_logo: bool = True,
     finder_dark_color: Optional[str] = None,
     module_shape: str = "circle",  # "circle" or "square"
-    edge_clearance: float = 1.0,
+    edge_clearance: float = 0.7,
     save_path: Optional[str] = None,
     university: Optional[str] = None,
     enforce_occlusion_limit: bool = True,
-    occlusion_threshold: float = 0.18,
+    occlusion_threshold: float = 0.16,
     min_pad_frac: float = 0.24,
     min_target_frac: float = 0.22,
     finder_rounding: float = 0.3,  # fraction of qr_scale for finder corner radius (slightly more rounding)
@@ -324,7 +324,7 @@ def make_branded_qr(
             def _can_decode(img: Image.Image) -> bool:
                 try:
                     res = _decode(img)
-                    return any(symbol.data.decode("utf-8", "ignore") for symbol in res)
+                    return any(symbol.data.decode("utf-8", "ignore") == url for symbol in res)
                 except Exception:
                     return False
 
@@ -387,16 +387,16 @@ def main() -> None:
     parser.add_argument("--smooth-sigma", type=float, default=0.0)
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
-    parser.add_argument("--qr-scale", type=int, default=10)
+    parser.add_argument("--qr-scale", type=int, default=12)
     parser.add_argument("--border-modules", type=int, default=4)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
     parser.add_argument("--finder-from-logo", action="store_true", default=True)
     parser.add_argument("--finder-dark-color", type=str, default=None)
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
-    parser.add_argument("--edge-clearance", type=float, default=1.0)
+    parser.add_argument("--edge-clearance", type=float, default=0.7)
     parser.add_argument("--enforce-occlusion-limit", action="store_true", default=True)
-    parser.add_argument("--occlusion-threshold", type=float, default=0.18)
+    parser.add_argument("--occlusion-threshold", type=float, default=0.16)
     parser.add_argument("--min-pad-frac", type=float, default=0.24)
     parser.add_argument("--min-target-frac", type=float, default=0.22)
     parser.add_argument("--finder-rounding", type=float, default=0.2)

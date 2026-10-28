@@ -13,7 +13,7 @@ branded-qr "https://example.com" path/to/logo.png \
 Preset branding:
 
 ```bash
-# MQ preset (uses data/mq_colour.png)
+# MQ preset (uses data/mq_shield.png and finder colour #76232F)
 branded-qr --university mq "https://example.com" -o data/aas_QR.png
 
 # UniSQ preset (uses data/unisq_shield_plain.png and finder color #3c2d4d)

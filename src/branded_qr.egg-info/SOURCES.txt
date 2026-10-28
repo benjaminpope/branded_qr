@@ -7,4 +7,6 @@ src/branded_qr.egg-info/dependency_links.txt
 src/branded_qr.egg-info/entry_points.txt
 src/branded_qr.egg-info/requires.txt
 src/branded_qr.egg-info/top_level.txt
+tests/test_decode.py
+tests/test_occlusion.py
 tests/test_universities.py

@@ -15,8 +15,10 @@ __version__ = "0.1.2"
 # Preset logo and finder color configurations for common universities
 UNIVERSITY_PRESETS = {
     "mq": {
-        "logo_path": "data/mq_colour.png",
-        "finder_dark_color": None,
+        # Official MQ shield symbol; finder marks use Pantone 188 CP dark red
+        # (#76232F) from the MQ brandmark guidelines.
+        "logo_path": "data/mq_shield.png",
+        "finder_dark_color": "#76232F",
     },
     "unisq": {
         "logo_path": "data/unisq_shield_plain.png",

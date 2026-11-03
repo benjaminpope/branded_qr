@@ -73,7 +73,7 @@ def make_branded_qr(
     ring_thickness: int = 0,
     ring_color: Tuple[int, int, int, int] = (200, 200, 200, 255),
     qr_scale: int = 16,
-    border_modules: int = 8,
+    border_modules: int = 2,
     error: str = "h",
     data_dark: str = "black",
     finder_from_logo: bool = True,
@@ -107,7 +107,8 @@ def make_branded_qr(
     Parameters
     - url: target URL/text encoded into the QR.
     - logo_path: path to the logo image file.
-    - target_frac: fraction of final QR width used for logo.
+    - target_frac: logo width as a fraction of the symbol width plus an 8-module
+      quiet zone, so the logo size does not depend on border_modules.
     - pad_frac: fraction of logo width used for white circular padding.
     - smooth_sigma: Gaussian blur for circle edge softness.
     - ring_thickness: optional outline width for the circle (0 disables).
@@ -152,10 +153,14 @@ def make_branded_qr(
     # Output image width in pixels
     img_w = (n + 2 * border_modules) * qr_scale
 
+    # Logo size reference: width with an 8-module quiet zone (the historical
+    # default), so narrowing the border does not shrink the logo.
+    logo_ref_w = (n + 2 * 8) * qr_scale
+
     # Load and resize logo
     logo_rgba = Image.open(logo_path).convert("RGBA")
     w, h = logo_rgba.size
-    target_w = int(img_w * target_frac)
+    target_w = int(logo_ref_w * target_frac)
     scale = target_w / max(1, w)
     new_w = max(1, target_w)
     new_h = max(1, int(h * scale))
@@ -196,7 +201,7 @@ def make_branded_qr(
                 current_target = target_frac
                 while ratio > occlusion_threshold and current_target > min_target_frac:
                     current_target = max(min_target_frac, current_target - 0.005)
-                    target_w2 = int(img_w * current_target)
+                    target_w2 = int(logo_ref_w * current_target)
                     scale2 = target_w2 / max(1, w)
                     new_w = max(1, target_w2)
                     new_h = max(1, int(h * scale2))
@@ -432,7 +437,7 @@ def main() -> None:
     parser.add_argument("--ring-thickness", type=int, default=0)
     parser.add_argument("--ring-color", type=str, default="#c8c8c8")
     parser.add_argument("--qr-scale", type=int, default=16)
-    parser.add_argument("--border-modules", type=int, default=8)
+    parser.add_argument("--border-modules", type=int, default=2)
     parser.add_argument("--error", type=str, default="h", choices=["l", "m", "q", "h"]) 
     parser.add_argument("--data-dark", type=str, default="black")
     # Finder color sampling toggles

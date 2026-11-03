@@ -21,6 +21,9 @@ branded-qr --university unisq "https://example.com" -o data/aas_QR.png
 
 # UQ preset (uses data/uqlogo.png)
 branded-qr --university uq "https://example.com" -o data/aas_QR.png
+
+# arXiv preset (uses data/arxiv_x.png and finder colour #B31B1B)
+branded-qr --university arxiv "https://arxiv.org/abs/2401.00001" -o arxiv_qr.png
 ```
 
 ## Python API
@@ -41,7 +44,7 @@ Using presets via `university`:
 from branded_qr import make_branded_qr
 img = make_branded_qr(
   url="https://example.com",
-  university="mq",  # mq | unisq | sydney | uq
+  university="mq",  # mq | unisq | sydney | uq | arxiv
   save_path="data/aas_QR.png"
 )
 ```

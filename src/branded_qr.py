@@ -33,6 +33,12 @@ UNIVERSITY_PRESETS = {
         "logo_path": "data/uqlogo.png",
         "finder_dark_color": None,
     },
+    "arxiv": {
+        # arXiv "X" logomark from static.arxiv.org/static/design-system/latest/logos/arxiv-logo.svg;
+        # finder marks use the arXiv header red (#B31B1B) from arxiv.org/archive/astro-ph.
+        "logo_path": "data/arxiv_x.png",
+        "finder_dark_color": "#B31B1B",
+    },
 }
 
 def _resize_rgba_premultiplied(img: Image.Image, size: Tuple[int, int], resample=Image.LANCZOS) -> Image.Image:
@@ -418,7 +424,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a branded QR code with a circular logo inset.")
     parser.add_argument("url", help="URL or text to encode")
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
-    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq"], help="Preset branding: mq | unisq | sydney | uq")
+    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq", "arxiv"], help="Preset branding: mq | unisq | sydney | uq | arxiv")
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.154)
     parser.add_argument("--pad-frac", type=float, default=0.14)

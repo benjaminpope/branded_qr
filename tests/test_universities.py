@@ -11,6 +11,7 @@ from branded_qr import make_branded_qr
         ("unisq", "https://unisq.edu.au"),
         ("sydney", "https://www.sydney.edu.au/"),
         ("uq", "https://uq.edu.au"),
+        ("arxiv", "https://arxiv.org/archive/astro-ph"),
     ],
 )
 def test_make_branded_qr_university(university: str, url: str):

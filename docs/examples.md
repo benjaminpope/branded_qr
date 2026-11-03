@@ -79,3 +79,22 @@ img.save("uq_qr.png")
 Rendered example:
 
 ![UQ QR](assets/examples/uq_qr.png)
+
+## arXiv
+
+- Website: https://arxiv.org/archive/astro-ph
+
+Example code:
+
+```python
+from branded_qr import make_branded_qr
+img = make_branded_qr(
+    url="https://arxiv.org/archive/astro-ph",
+    university="arxiv"
+)
+img.save("arxiv_qr.png")
+```
+
+Rendered example:
+
+![arXiv QR](assets/examples/arxiv_qr.png)

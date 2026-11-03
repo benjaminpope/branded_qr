@@ -33,6 +33,9 @@ uv run branded-qr --university unisq "https://example.com" -o data/aas_QR.png
 
 # UQ preset (uses data/uqlogo.png)
 uv run branded-qr --university uq "https://example.com" -o data/aas_QR.png
+
+# arXiv preset (uses data/arxiv_x.png and finder colour #B31B1B)
+uv run branded-qr --university arxiv "https://arxiv.org/abs/2401.00001" -o arxiv_qr.png
 ```
 
 ## Python API

@@ -21,6 +21,7 @@ def _decode_pyzbar(img: Image.Image):
         ("sydney", "https://www.sydney.edu.au/"),
         ("uq", "https://uq.edu.au"),
         ("arxiv", "https://arxiv.org/archive/astro-ph"),
+        ("schmidt", "https://www.schmidtsciences.org/schmidt-observatory-system/"),
     ],
 )
 def test_round_trip_decode(university: str, url: str):

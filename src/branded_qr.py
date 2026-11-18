@@ -53,10 +53,10 @@ UNIVERSITY_PRESETS = {
 
 
 def _hex_to_rgb(color: str) -> Tuple[int, int, int]:
-    c = color.lstrip("#")
-    if len(c) == 3:
-        c = "".join(ch * 2 for ch in c)
-    return int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+    """Parse any colour Pillow accepts (hex, #RGBA, named, rgb(...)); raise ValueError otherwise."""
+    from PIL import ImageColor
+
+    return tuple(ImageColor.getrgb(color)[:3])
 
 
 def _gradient_color(start: Tuple[int, int, int], end: Tuple[int, int, int], x: float, y: float, n: int) -> str:
@@ -158,6 +158,8 @@ def make_branded_qr(
     Returns: PIL.Image.Image of the composed QR.
     """
     # Resolve presets based on university, if provided
+    # A finder colour the caller passes explicitly beats a gradient (from a preset or not).
+    explicit_finder_dark = finder_dark_color is not None
     if university:
         uni_key = university.strip().lower()
         preset = UNIVERSITY_PRESETS.get(uni_key)
@@ -363,7 +365,9 @@ def make_branded_qr(
     radius = max(0, int(qr_scale * finder_rounding))
     def draw_finder(x0: int, y0: int):
         finder_dark_hex_local = (
-            _gradient_color(grad[0], grad[1], x0 + 3, y0 + 3, n) if grad else finder_dark_hex
+            _gradient_color(grad[0], grad[1], x0 + 3, y0 + 3, n)
+            if grad and not explicit_finder_dark
+            else finder_dark_hex
         )
         # Outer dark 7x7
         px0 = (x0 + border_modules) * qr_scale
@@ -455,6 +459,8 @@ def make_branded_qr(
                     min_img_size=min_img_size,
                     boost_error=boost_error,
                     gradient_colors=gradient_colors,
+                    kill_margin=kill_margin,
+                    finder_light_color=finder_light_color,
                 )
                 ok = _can_decode(QRimg)
                 attempts += 1

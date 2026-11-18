@@ -44,5 +44,9 @@ jobs:
           uv pip install --system pytest
 
       - name: Run tests
+        env:
+          # Homebrew on Apple silicon installs zbar in /opt/homebrew/lib, which
+          # ctypes does not search, so pyzbar decode tests would be skipped.
+          DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
         run: |
-          python -m pytest -q
+          python -m pytest -q -rs

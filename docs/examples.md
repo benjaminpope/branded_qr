@@ -98,3 +98,24 @@ img.save("arxiv_qr.png")
 Rendered example:
 
 ![arXiv QR](assets/examples/arxiv_qr.png)
+
+## Schmidt Sciences (Eric and Wendy Schmidt Observatory System)
+
+- Website: https://www.schmidtsciences.org/schmidt-observatory-system/
+
+The logo is the coloured part of the Observatory System mark, without its text. Modules follow the mark's diagonal gradient, from teal (`#0FB5B5`) at bottom left to purple (`#774D9F`) at top right.
+
+Example code:
+
+```python
+from branded_qr import make_branded_qr
+img = make_branded_qr(
+    url="https://www.schmidtsciences.org/schmidt-observatory-system/",
+    university="schmidt"
+)
+img.save("schmidt_qr.png")
+```
+
+Rendered example:
+
+![Schmidt QR](assets/examples/schmidt_qr.png)

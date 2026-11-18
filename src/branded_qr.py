@@ -39,7 +39,32 @@ UNIVERSITY_PRESETS = {
         "logo_path": "data/arxiv_x.png",
         "finder_dark_color": "#B31B1B",
     },
+    "schmidt": {
+        # Eric and Wendy Schmidt Observatory System (Schmidt Sciences): the
+        # coloured circles of the logo from
+        # symposium.schmidtobservatorysystem.org/static/assets/logo-nav.png,
+        # text removed. Modules run along the logo's own gradient, from its
+        # bottom-left teal (#0FB5B5) to its top-right purple (#774D9F).
+        "logo_path": "data/sos_logo.png",
+        "finder_dark_color": None,
+        "gradient_colors": ("#0FB5B5", "#774D9F"),
+    },
 }
+
+
+def _hex_to_rgb(color: str) -> Tuple[int, int, int]:
+    """Parse any colour Pillow accepts (hex, #RGBA, named, rgb(...)); raise ValueError otherwise."""
+    from PIL import ImageColor
+
+    return tuple(ImageColor.getrgb(color)[:3])
+
+
+def _gradient_color(start: Tuple[int, int, int], end: Tuple[int, int, int], x: float, y: float, n: int) -> str:
+    """Colour at module (x, y) on a diagonal gradient from bottom-left (start) to top-right (end)."""
+    t = (x + (n - 1 - y)) / max(1, 2 * (n - 1))
+    t = min(1.0, max(0.0, t))
+    rgb = tuple(int(round(s + (e - s) * t)) for s, e in zip(start, end))
+    return "#{:02x}{:02x}{:02x}".format(*rgb)
 
 def _resize_rgba_premultiplied(img: Image.Image, size: Tuple[int, int], resample=Image.LANCZOS) -> Image.Image:
     """Resize an RGBA image using premultiplied alpha to avoid dark halos.
@@ -95,6 +120,7 @@ def make_branded_qr(
     target_step: float = 0.005,
     min_img_size: Optional[int] = 1920,
     boost_error: bool = True,
+    gradient_colors: Optional[Tuple[str, str]] = None,
 ) -> Image.Image:
     """Generate a branded QR code with a circular inset and logo.
 
@@ -122,6 +148,9 @@ def make_branded_qr(
     - module_shape: 'circle' or 'square' for data modules.
     - edge_clearance: multiplier for skipping dots overlapping the inset edge.
     - save_path: optional output filename; if provided, image is saved.
+    - gradient_colors: optional (bottom_left, top_right) colours; data modules
+      and finder marks are coloured along a diagonal gradient between them,
+      overriding data_dark and finder_dark_color.
 
     Notes
     - For colleagues at UniSQ, set finder_dark_color to "#3c2d4d" for brand consistency.
@@ -129,6 +158,8 @@ def make_branded_qr(
     Returns: PIL.Image.Image of the composed QR.
     """
     # Resolve presets based on university, if provided
+    # A finder colour the caller passes explicitly beats a gradient (from a preset or not).
+    explicit_finder_dark = finder_dark_color is not None
     if university:
         uni_key = university.strip().lower()
         preset = UNIVERSITY_PRESETS.get(uni_key)
@@ -138,6 +169,8 @@ def make_branded_qr(
             logo_path = preset.get("logo_path")
         if finder_dark_color is None and preset.get("finder_dark_color") is not None:
             finder_dark_color = preset.get("finder_dark_color")
+        if gradient_colors is None and preset.get("gradient_colors") is not None:
+            gradient_colors = preset.get("gradient_colors")
         # If a preset doesn't set finder_dark_color, we keep sampling from logo (finder_from_logo=True)
 
     if logo_path is None:
@@ -274,6 +307,10 @@ def make_branded_qr(
     # Ensure the logo is clipped to the circular mask (no corners leaking)
     bg.putalpha(circle_mask)
 
+    grad = None
+    if gradient_colors is not None:
+        grad = (_hex_to_rgb(gradient_colors[0]), _hex_to_rgb(gradient_colors[1]))
+
     # Render QR modules (data layer) on a separate RGBA layer for precise masking
     QRimg = Image.new("RGBA", (img_w, img_w), (255, 255, 255, 255))
     modules_layer = Image.new("RGBA", (img_w, img_w), (0, 0, 0, 0))
@@ -302,10 +339,11 @@ def make_branded_qr(
                     continue
                 if (circle_radius - module_radius - kill_margin_px) < d < (circle_radius + module_radius + kill_margin_px):
                     continue
+                fill = _gradient_color(grad[0], grad[1], x, y, n) if grad else data_dark
                 if module_shape == "circle":
-                    modules_draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+                    modules_draw.ellipse([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=fill)
                 else:
-                    modules_draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=data_dark)
+                    modules_draw.rectangle([px, py, px + qr_scale - 1, py + qr_scale - 1], fill=fill)
 
     # Strict band mask: remove any module pixels within circle radius + margin
     band_mask = Image.new("L", (img_w, img_w), 255)
@@ -326,15 +364,20 @@ def make_branded_qr(
     draw = ImageDraw.Draw(QRimg)
     radius = max(0, int(qr_scale * finder_rounding))
     def draw_finder(x0: int, y0: int):
+        finder_dark_hex_local = (
+            _gradient_color(grad[0], grad[1], x0 + 3, y0 + 3, n)
+            if grad and not explicit_finder_dark
+            else finder_dark_hex
+        )
         # Outer dark 7x7
         px0 = (x0 + border_modules) * qr_scale
         py0 = (y0 + border_modules) * qr_scale
         px1 = (x0 + 7 + border_modules) * qr_scale - 1
         py1 = (y0 + 7 + border_modules) * qr_scale - 1
         try:
-            draw.rounded_rectangle([px0, py0, px1, py1], radius=radius, fill=finder_dark_hex)
+            draw.rounded_rectangle([px0, py0, px1, py1], radius=radius, fill=finder_dark_hex_local)
         except Exception:
-            draw.rectangle([px0, py0, px1, py1], fill=finder_dark_hex)
+            draw.rectangle([px0, py0, px1, py1], fill=finder_dark_hex_local)
 
         # Inner light 5x5
         lx0 = (x0 + 1 + border_modules) * qr_scale
@@ -348,7 +391,7 @@ def make_branded_qr(
         dy0 = (y0 + 2 + border_modules) * qr_scale
         dx1 = (x0 + 5 + border_modules) * qr_scale - 1
         dy1 = (y0 + 5 + border_modules) * qr_scale - 1
-        draw.rectangle([dx0, dy0, dx1, dy1], fill=finder_dark_hex)
+        draw.rectangle([dx0, dy0, dx1, dy1], fill=finder_dark_hex_local)
 
     draw_finder(0, 0)
     draw_finder(n - 7, 0)
@@ -414,6 +457,10 @@ def make_branded_qr(
                     finder_rounding=finder_rounding,
                     verify_decode=False,
                     min_img_size=min_img_size,
+                    boost_error=boost_error,
+                    gradient_colors=gradient_colors,
+                    kill_margin=kill_margin,
+                    finder_light_color=finder_light_color,
                 )
                 ok = _can_decode(QRimg)
                 attempts += 1
@@ -429,7 +476,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a branded QR code with a circular logo inset.")
     parser.add_argument("url", help="URL or text to encode")
     parser.add_argument("logo_path", nargs="?", default=None, help="Path to logo image (optional if --university is supplied)")
-    parser.add_argument("--university", type=str, choices=["mq", "unisq", "sydney", "uq", "arxiv"], help="Preset branding: mq | unisq | sydney | uq | arxiv")
+    parser.add_argument("--university", type=str, choices=sorted(UNIVERSITY_PRESETS), help="Preset branding: " + " | ".join(sorted(UNIVERSITY_PRESETS)))
     parser.add_argument("-o", "--output", dest="save_path", default="branded_qr.png", help="Output image path")
     parser.add_argument("--target-frac", type=float, default=0.154)
     parser.add_argument("--pad-frac", type=float, default=0.14)
@@ -445,6 +492,8 @@ def main() -> None:
     grp_ffl.add_argument("--finder-from-logo", dest="finder_from_logo", action="store_true", default=True)
     grp_ffl.add_argument("--no-finder-from-logo", dest="finder_from_logo", action="store_false")
     parser.add_argument("--finder-dark-color", type=str, default=None)
+    parser.add_argument("--gradient", nargs=2, metavar=("BOTTOM_LEFT", "TOP_RIGHT"), default=None,
+                        help="Colour modules along a diagonal gradient between two colours")
     parser.add_argument("--module-shape", type=str, default="circle", choices=["circle", "square"]) 
     parser.add_argument("--edge-clearance", type=float, default=0.5)
     parser.add_argument("--kill-margin", type=float, default=0.35, help="Margin around inset circle (in units of qr_scale) to skip modules and avoid clipping")
@@ -511,6 +560,7 @@ def main() -> None:
         boost_error=args.boost_error,
         save_path=args.save_path,
         university=args.university,
+        gradient_colors=tuple(args.gradient) if args.gradient else None,
     )
 
     # If not saving, save to default

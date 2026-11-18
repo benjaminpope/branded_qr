@@ -36,6 +36,13 @@ uv run branded-qr --university uq "https://example.com" -o data/aas_QR.png
 
 # arXiv preset (uses data/arxiv_x.png and finder colour #B31B1B)
 uv run branded-qr --university arxiv "https://arxiv.org/abs/2401.00001" -o arxiv_qr.png
+
+# Schmidt Sciences preset (uses data/sos_logo.png; modules run from teal #0FB5B5
+# at bottom left to purple #774D9F at top right)
+uv run branded-qr --university schmidt "https://www.schmidtsciences.org/schmidt-observatory-system/" -o schmidt_qr.png
+
+# Any two colours as a bottom-left to top-right gradient
+uv run branded-qr "https://example.com" logo.png --gradient "#0FB5B5" "#774D9F" -o gradient_qr.png
 ```
 
 ## Python API
